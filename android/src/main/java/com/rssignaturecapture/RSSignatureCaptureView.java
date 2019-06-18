@@ -104,10 +104,11 @@ public class RSSignatureCaptureView extends View {
 
 		// set the signature bitmap
 		if (signatureBitmap == null) {
+			int width = this.getWidth();
 			byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
 			Bitmap immutable = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length );
 			signatureBitmap = immutable.copy(Bitmap.Config.RGB_565, true);
-			signatureBitmap = Bitmap.createScaledBitmap(signatureBitmap, 900, 300, true);
+			signatureBitmap = Bitmap.createScaledBitmap(signatureBitmap, width, width /3 , true);
 		}
 
 		Canvas canvas = new Canvas(signatureBitmap);
@@ -211,10 +212,11 @@ public class RSSignatureCaptureView extends View {
 
 	private void ensureSignatureBitmap() {
 		if (mSignatureBitmap == null) {
+			int width = this.getWidth();
 			byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
 			Bitmap immutable = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length );
 			mSignatureBitmap = immutable.copy(Bitmap.Config.ARGB_8888, true);
-			mSignatureBitmap = Bitmap.createScaledBitmap(mSignatureBitmap, 900, 300, true);
+			mSignatureBitmap = Bitmap.createScaledBitmap(mSignatureBitmap, width, width/3, true);
 			mSignatureBitmapCanvas = new Canvas(mSignatureBitmap);
 		}
 	}
