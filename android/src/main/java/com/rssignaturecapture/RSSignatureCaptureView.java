@@ -46,7 +46,6 @@ public class RSSignatureCaptureView extends View {
 	private float mLastVelocity;
 	private float mLastWidth;
 	private RectF mDirtyRect;
-	private String watermark;
 
 	private List<TimedPoint> mPoints;
 	private Paint mPaint = new Paint();
@@ -99,7 +98,7 @@ public class RSSignatureCaptureView extends View {
 	*
 	* @return
 	*/
-	public Bitmap getSignature() {
+	public Bitmap getSignature(String watermark) {
 
 		Bitmap signatureBitmap = null;
 		int width = this.getWidth();
@@ -126,7 +125,7 @@ public class RSSignatureCaptureView extends View {
 		this.draw(canvas);
 		
 		// Add Time and user details to the signature
-		canvas.drawText(this.watermark, 10,30, paint);
+		canvas.drawText(watermark, 10,30, paint);
 
 		return signatureBitmap;
 	}
@@ -238,10 +237,6 @@ public class RSSignatureCaptureView extends View {
 
 	private float strokeWidth(float velocity) {
 		return Math.max(mMaxWidth / (velocity + 1), mMinWidth);
-	}
-
-	public void setWatermark(String watermark) {
-		this.watermark = watermark;
 	}
 
 	private ControlTimedPoints calculateCurveControlPoints(TimedPoint s1, TimedPoint s2, TimedPoint s3) {
