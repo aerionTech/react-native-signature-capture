@@ -132,7 +132,7 @@ public class RSSignatureCaptureViewManager extends ViewGroupManager<RSSignatureC
 		Assertions.assertNotNull(args);
 		switch (commandType) {
 			case COMMAND_SAVE_IMAGE: {
-				view.saveImage();
+				view.saveImage(args.getString(0));
 				return;
 			}
 			case COMMAND_RESET_IMAGE: {
