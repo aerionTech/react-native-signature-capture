@@ -46,6 +46,7 @@ public class RSSignatureCaptureView extends View {
 	private float mLastVelocity;
 	private float mLastWidth;
 	private RectF mDirtyRect;
+	private String watermark;
 
 	private List<TimedPoint> mPoints;
 	private Paint mPaint = new Paint();
@@ -101,10 +102,10 @@ public class RSSignatureCaptureView extends View {
 	public Bitmap getSignature() {
 
 		Bitmap signatureBitmap = null;
+		int width = this.getWidth();
 
 		// set the signature bitmap
 		if (signatureBitmap == null) {
-			int width = this.getWidth();
 			byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
 			Bitmap immutable = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length );
 			signatureBitmap = immutable.copy(Bitmap.Config.RGB_565, true);
@@ -116,17 +117,19 @@ public class RSSignatureCaptureView extends View {
 		Paint paint = new Paint();
 		paint.setColor(Color.BLACK);
 		paint.setStyle(Style.FILL);
-		paint.setTextSize(12);
+
+		int fontSize = (width / 600) * 15;
+		fontSize = (fontSize <= 0 ) ? 15 : fontSize;
+		paint.setTextSize(fontSize);
 
 		// important for saving signature
 		this.draw(canvas);
 		
 		// Add Time and user details to the signature
-		canvas.drawText("Hello This a test text", 10,10, paint);
+		canvas.drawText(this.watermark, 10,30, paint);
 
 		return signatureBitmap;
 	}
-
 
 	/**
 	* clear signature canvas
@@ -235,6 +238,10 @@ public class RSSignatureCaptureView extends View {
 
 	private float strokeWidth(float velocity) {
 		return Math.max(mMaxWidth / (velocity + 1), mMinWidth);
+	}
+
+	public void setWatermark(String watermark) {
+		this.watermark = watermark;
 	}
 
 	private ControlTimedPoints calculateCurveControlPoints(TimedPoint s1, TimedPoint s2, TimedPoint s3) {
