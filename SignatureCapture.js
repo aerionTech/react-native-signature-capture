@@ -71,11 +71,11 @@ class SignatureCapture extends React.Component {
         );
     }
 
-    saveImage() {
+    saveImage(watermark) {
         UIManager.dispatchViewManagerCommand(
             ReactNative.findNodeHandle(this),
             UIManager.getViewManagerConfig('RSSignatureView').Commands.saveImage,
-            [],
+            [watermark],
         );
     }
 
