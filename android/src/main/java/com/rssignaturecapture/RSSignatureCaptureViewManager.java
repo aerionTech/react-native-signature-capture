@@ -26,6 +26,7 @@ public class RSSignatureCaptureViewManager extends ViewGroupManager<RSSignatureC
 	public static final String PROPS_MAX_STROKE_WIDTH="maxStrokeWidth";
 	public static final String PROPS_STROKE_COLOR="strokeColor";
 	public static final String PROPS_BACKGROUND_COLOR="backgroundColor";
+	public static final String PROPS_WATERMARK ="watermark";
 
 	public static final int COMMAND_SAVE_IMAGE = 1;
 	public static final int COMMAND_RESET_IMAGE = 2;
@@ -104,6 +105,14 @@ public class RSSignatureCaptureViewManager extends ViewGroupManager<RSSignatureC
 		Log.d("backgroundColor:",  ""+color);
 		if(view!=null){
 			view.getSignatureView().setBackgroundColor(Color.parseColor(color));
+		}
+	}
+
+	@ReactProp(name = PROPS_WATERMARK)
+	public void setPropsWatermark(RSSignatureCaptureMainView view, @Nullable String watermark) {
+		Log.d("watermark:",  ""+watermark);
+		if(view!=null){
+			view.getSignatureView().setWatermark(watermark);
 		}
 	}
 
