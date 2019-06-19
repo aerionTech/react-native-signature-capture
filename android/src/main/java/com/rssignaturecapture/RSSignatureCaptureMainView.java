@@ -137,7 +137,7 @@ public class RSSignatureCaptureMainView extends LinearLayout implements OnClickL
   /**
    * save the signature to an sd card directory
    */
-  final void saveImage() {
+  final void saveImage(String watermark) {
 
     String root = Environment.getExternalStorageDirectory().toString();
 
@@ -164,14 +164,14 @@ public class RSSignatureCaptureMainView extends LinearLayout implements OnClickL
       // save the signature
       if (saveFileInExtStorage) {
         FileOutputStream out = new FileOutputStream(file);
-        this.signatureView.getSignature().compress(Bitmap.CompressFormat.PNG, 90, out);
+        this.signatureView.getSignature(watermark).compress(Bitmap.CompressFormat.PNG, 90, out);
         out.flush();
         out.close();
       }
 
 
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-      Bitmap resizedBitmap = getResizedBitmap(this.signatureView.getSignature());
+      Bitmap resizedBitmap = getResizedBitmap(this.signatureView.getSignature(watermark));
       resizedBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
 
 
