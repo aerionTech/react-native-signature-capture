@@ -125,7 +125,7 @@ public class RSSignatureCaptureMainView extends LinearLayout implements OnClickL
 
     // save the signature
     if (tag.equalsIgnoreCase("save")) {
-      this.saveImage();
+      this.saveImage("");
     }
 
     // empty the canvas
