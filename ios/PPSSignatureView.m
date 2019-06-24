@@ -124,8 +124,9 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
 		
 		time(NULL);
 		
-		self.backgroundColor = [UIColor whiteColor];
-		self.opaque = NO;
+		self.backgroundColor = [UIColor clearColor];
+        
+        self.opaque = NO;
 		
 		self.context = context;
 		self.drawableDepthFormat = GLKViewDrawableDepthFormat24;
@@ -256,12 +257,12 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
 	float scaleFactor = 1.0;
 	
 	if(image.size.width > image.size.height) {
-		scaleFactor = image.size.width / image.size.height;
+		scaleFactor = image.size.width / newSize.width;
 		scaledSize.width = newSize.width;
 		scaledSize.height = newSize.height / scaleFactor;
 	}
 	else {
-		scaleFactor = image.size.height / image.size.width;
+		scaleFactor = image.size.height / newSize.height;
 		scaledSize.height = newSize.height;
 		scaledSize.width = newSize.width / scaleFactor;
 	}
@@ -278,6 +279,32 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
 	return scaledImage;
 }
 
+- (UIImage *)drawImage:(UIImage*)image onImage:(UIImage*)background atSize:(CGSize)size
+{
+    NSLog(@"size: (%f, %f)", size.width, size.height);
+    CGRect rect = CGRectMake(0, 0, size.width, size.height);
+    UIGraphicsBeginImageContext(size);
+    [[self reduceImage:background toSize:size] drawInRect:rect];
+    [[self reduceImage:image toSize:size] drawInRect:rect];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+
+-(UIImage*) drawText:(NSString*)text inImage:(UIImage*)image withFont:(UIFont*)font atPoint:(CGPoint)point
+{
+    UIGraphicsBeginImageContextWithOptions(image.size, YES, 0.0f);
+    [image drawInRect:CGRectMake(0,0,image.size.width,image.size.height)];
+    CGRect rect = CGRectMake(point.x, point.y, image.size.width - point.x, image.size.height - point.y);
+    [[UIColor blackColor] set];
+    NSDictionary *att = @{NSFontAttributeName:font};
+    [text drawInRect:rect withAttributes:att];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return newImage;
+}
+
 - (UIImage *)signatureImage
 {
 	return [self signatureImage:false withSquare:false];
@@ -288,44 +315,43 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
 }
 - (UIImage *)signatureImage: (BOOL) rotatedImage withSquare:(BOOL) square
 {
-	if (!self.hasSignature)
+    return [self signatureImage:rotatedImage withSquare:square withBackground:nil withWatermark:nil];
+}
+- (UIImage *) signatureImage: (BOOL) rotatedImage withSquare:(BOOL)square withBackground:(UIImage*)background withWatermark:(NSString*)watermark
+{
+    if (!self.hasSignature)
 		return nil;
 	
 	UIImage *signatureImg;
 	UIImage *snapshot = [self snapshot];
 	[self erase];
-	
-	if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ) {
-		//signature
-		if (square) {
-			signatureImg = [self reduceImage:snapshot toSize: CGSizeMake(400.0f, 400.0f)];
-		}
-		else {
-			signatureImg = snapshot;
-		}
-	}
-	else {
-		//rotate iphone signature - iphone's signature screen is always landscape
-		
-		if (rotatedImage) {
-			if (square) {
-				UIImage *rotatedImg = [self rotateImage:snapshot clockwise:false];
-				signatureImg = [self reduceImage:rotatedImg toSize: CGSizeMake(400.0f, 400.0f)];
-			}
-			else {
-				UIImage *rotatedImg = [self rotateImage:snapshot clockwise:false];
-				signatureImg = rotatedImg;
-			}
-		}
-		else {
-			if (square) {
-				signatureImg = [self reduceImage:snapshot toSize: CGSizeMake(400.0f, 400.0f)];
-			}
-			else {
-				signatureImg = snapshot;
-			}
-		}
-	}
+    CGSize squareSize = CGSizeMake(400.0f, 400.0f);
+    
+    UIImage* rotatedImg = snapshot;
+    
+    if ( UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad && rotatedImage ) {
+        //rotate iphone signature - iphone's signature screen is always landscape
+        rotatedImg = [self rotateImage:snapshot clockwise:false];
+    }
+    if (background) {
+        NSLog(@"square: %@", square ? @"YES":@"NO");
+        NSLog(@"squareSize: (%f, %f)", squareSize.width, squareSize.height);
+        NSLog(@"(rotatedImg.size: (%f, %f)", rotatedImg.size.width, rotatedImg.size.height);
+        signatureImg = [self drawImage:snapshot onImage:background atSize:square ? squareSize : rotatedImg.size];
+    }
+    else if (square) {
+        signatureImg = [self reduceImage:rotatedImg toSize: squareSize];
+    }
+    else {
+        signatureImg = rotatedImg;
+    }
+    
+    if(watermark) {
+        int fontSize = (signatureImg.size.width / 600) * 15;
+        fontSize = (fontSize <= 0 ) ? 15 : fontSize;
+        UIFont *font = [UIFont systemFontOfSize:fontSize];
+        signatureImg = [self drawText:watermark inImage:signatureImg withFont:font atPoint:CGPointMake(0, 0)];
+    }
 	
 	return signatureImg;
 }
