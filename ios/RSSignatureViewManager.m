@@ -31,9 +31,9 @@ RCT_EXPORT_VIEW_PROPERTY(showTitleLabel, BOOL)
 
 // Both of these methods needs to be called from the main thread so the
 // UI can clear out the signature.
-RCT_EXPORT_METHOD(saveImage:(nonnull NSNumber *)reactTag) {
+RCT_EXPORT_METHOD(saveImage:(nonnull NSNumber *)reactTag withWatermark:(NSString*) watermark) {
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[self.signView saveImage];
+        [self.signView saveImageWithWatermark: watermark];
 	});
 }
 
