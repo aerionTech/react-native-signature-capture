@@ -19,6 +19,7 @@
 	BOOL _showBorder;
 	BOOL _showNativeButtons;
 	BOOL _showTitleLabel;
+    int _maxSize;
 }
 
 @synthesize sign;
@@ -29,6 +30,7 @@
   _showBorder = YES;
 	_showNativeButtons = YES;
 	_showTitleLabel = YES;
+    _maxSize = 500;
 	if ((self = [super init])) {
 		_border = [CAShapeLayer layer];
 		_border.strokeColor = [UIColor blackColor].CGColor;
@@ -185,6 +187,10 @@
 	_showTitleLabel = showTitleLabel;
 }
 
+- (void)setMaxSize:(int)maxSize {
+    _maxSize = maxSize;
+}
+
 -(void) onSaveButtonPressed {
 	[self saveImageWithWatermark:nil];
 }
@@ -192,7 +198,7 @@
 -(void) saveImageWithWatermark:(NSString*)watermark {
 	saveButton.hidden = YES;
 	clearButton.hidden = YES;
-    UIImage *signImage = [self.sign signatureImage: _rotateClockwise withSquare:_square withBackground:[self getBackgroundImageWithSize:self.bounds.size] withWatermark:watermark];
+    UIImage *signImage = [self.sign signatureImage: _rotateClockwise withSquare:_square withMaxSize:_maxSize withBackground:[self getBackgroundImageWithSize:self.bounds.size] withWatermark:watermark];
 
 	saveButton.hidden = NO;
 	clearButton.hidden = NO;
