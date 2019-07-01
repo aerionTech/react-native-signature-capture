@@ -269,7 +269,7 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
 	
 	NSLog(@"%f x %f", scaledSize.width, scaledSize.height);
 	
-	UIGraphicsBeginImageContext(scaledSize);
+	UIGraphicsBeginImageContextWithOptions(scaledSize, NO, 1.0);
 	CGRect scaledImageRect = CGRectMake( 0.0, 0.0, scaledSize.width, scaledSize.height );
 	[image drawInRect:scaledImageRect];
 	
@@ -283,7 +283,7 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
 {
     NSLog(@"size: (%f, %f)", size.width, size.height);
     CGRect rect = CGRectMake(0, 0, size.width, size.height);
-    UIGraphicsBeginImageContext(size);
+    UIGraphicsBeginImageContextWithOptions(size, NO, 1.0);
     [[self reduceImage:background toSize:size] drawInRect:rect];
     [[self reduceImage:image toSize:size] drawInRect:rect];
     UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
@@ -293,7 +293,7 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
 
 -(UIImage*) drawText:(NSString*)text inImage:(UIImage*)image withFont:(UIFont*)font atPoint:(CGPoint)point
 {
-    UIGraphicsBeginImageContextWithOptions(image.size, YES, 0.0f);
+    UIGraphicsBeginImageContextWithOptions(image.size, NO, 1.0);
     [image drawInRect:CGRectMake(0,0,image.size.width,image.size.height)];
     CGRect rect = CGRectMake(point.x, point.y, image.size.width - point.x, image.size.height - point.y);
     [[UIColor blackColor] set];
@@ -315,9 +315,9 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
 }
 - (UIImage *)signatureImage: (BOOL) rotatedImage withSquare:(BOOL) square
 {
-    return [self signatureImage:rotatedImage withSquare:square withBackground:nil withWatermark:nil];
+    return [self signatureImage:rotatedImage withSquare:square withMaxSize:500 withBackground:nil withWatermark:nil];
 }
-- (UIImage *) signatureImage: (BOOL) rotatedImage withSquare:(BOOL)square withBackground:(UIImage*)background withWatermark:(NSString*)watermark
+- (UIImage *) signatureImage: (BOOL) rotatedImage withSquare:(BOOL)square withMaxSize:(int)maxSize withBackground:(UIImage*)background withWatermark:(NSString*)watermark
 {
     if (!self.hasSignature)
 		return nil;
@@ -325,7 +325,7 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
 	UIImage *signatureImg;
 	UIImage *snapshot = [self snapshot];
 	[self erase];
-    CGSize squareSize = CGSizeMake(400.0f, 400.0f);
+    CGSize squareSize = CGSizeMake(maxSize, maxSize);
     
     UIImage* rotatedImg = snapshot;
     
@@ -333,21 +333,38 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
         //rotate iphone signature - iphone's signature screen is always landscape
         rotatedImg = [self rotateImage:snapshot clockwise:false];
     }
+    
+    
+    CGSize size = rotatedImg.size;
+    if(square) {
+        size = squareSize;
+    }
+    else {
+        if(rotatedImg.size.width >= rotatedImg.size.height) {
+            int ratio = (int)((float)maxSize / (float)rotatedImg.size.width);
+            size = CGSizeMake(maxSize, rotatedImg.size.height * ratio);
+        }
+        else {
+            int ratio = (int)((float)maxSize / (float)rotatedImg.size.height);
+            size = CGSizeMake(rotatedImg.size.width * ratio, maxSize);
+        }
+    }
+    
     if (background) {
-        NSLog(@"square: %@", square ? @"YES":@"NO");
-        NSLog(@"squareSize: (%f, %f)", squareSize.width, squareSize.height);
-        NSLog(@"(rotatedImg.size: (%f, %f)", rotatedImg.size.width, rotatedImg.size.height);
-        signatureImg = [self drawImage:snapshot onImage:background atSize:square ? squareSize : rotatedImg.size];
+        signatureImg = [self drawImage:snapshot onImage:background atSize:size];
     }
     else if (square) {
         signatureImg = [self reduceImage:rotatedImg toSize: squareSize];
+    }
+    else if (size.width != rotatedImg.size.width && size.height != rotatedImg.size.height) {
+        signatureImg = [self reduceImage:rotatedImg toSize: size];
     }
     else {
         signatureImg = rotatedImg;
     }
     
     if(watermark) {
-        int fontSize = (signatureImg.size.width / 600) * 15;
+        int fontSize = (signatureImg.size.width / maxSize) * 15;
         fontSize = (fontSize <= 0 ) ? 15 : fontSize;
         UIFont *font = [UIFont systemFontOfSize:fontSize];
         signatureImg = [self drawText:watermark inImage:signatureImg withFont:font atPoint:CGPointMake(0, 0)];
