@@ -341,12 +341,12 @@ static PPSSignaturePoint ViewPointToGL(CGPoint viewPoint, CGRect bounds, GLKVect
     }
     else {
         if(rotatedImg.size.width >= rotatedImg.size.height) {
-            int ratio = (int)((float)maxSize / (float)rotatedImg.size.width);
-            size = CGSizeMake(maxSize, rotatedImg.size.height * ratio);
+            float ratio = ((float)maxSize / (float)rotatedImg.size.width);
+            size = CGSizeMake(maxSize, (int)(rotatedImg.size.height * ratio));
         }
         else {
-            int ratio = (int)((float)maxSize / (float)rotatedImg.size.height);
-            size = CGSizeMake(rotatedImg.size.width * ratio, maxSize);
+            float ratio = ((float)maxSize / (float)rotatedImg.size.height);
+            size = CGSizeMake((int)(rotatedImg.size.width * ratio), maxSize);
         }
     }
     
